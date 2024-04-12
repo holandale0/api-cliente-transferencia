@@ -1,0 +1,23 @@
+
+spring:
+  application:
+    name: api-cliente-transferencia
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
+server:
+  port: 8084
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types: application/json
+
+integracao:
+  url: http://localhost:9090
+
+transferencia:
+  url: http://localhost:8080
+
