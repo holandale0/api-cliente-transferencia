@@ -1,6 +1,7 @@
 package com.client.transferencia.domain.cliente.service;
 
 import com.client.transferencia.application.service.dto.TransferenciaRequestDTO;
+import com.client.transferencia.domain.exception.ClienteNotFoundException;
 import com.client.transferencia.infrastructure.data.exception.InfrastructureException;
 import com.client.transferencia.infrastructure.data.integration.rest.cliente.ClienteIntegration;
 import com.client.transferencia.infrastructure.shared.dto.ClienteDTO;
@@ -53,7 +54,7 @@ public class ClienteServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = clienteService.buscarCliente(new TransferenciaRequestDTO("clienteId"));
 
         StepVerifier.create(resultMono)
-                .expectError(InfrastructureException.class)
+                .expectError(ClienteNotFoundException.class)
                 .verify();
     }
 

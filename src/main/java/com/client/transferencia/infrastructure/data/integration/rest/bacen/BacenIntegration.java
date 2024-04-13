@@ -7,13 +7,13 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
+import reactor.core.publisher.Mono;
 
 
 @FeignClient(name = "bacen-api", url = "${integracao.url}", configuration = FeignClientConfiguration.class)
 public interface BacenIntegration {
 
     @PostMapping(value = "/notificacoes", consumes = MediaType.APPLICATION_JSON_VALUE)
-    void notificarBacen(@RequestBody DadosTransferenciaDTO request);
+    Mono<Void> notificarBacen(@RequestBody DadosTransferenciaDTO request);
 
 }

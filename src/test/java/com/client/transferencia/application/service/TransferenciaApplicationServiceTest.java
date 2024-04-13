@@ -1,11 +1,13 @@
 package com.client.transferencia.application.service;
 
-import com.client.transferencia.application.exception.ApplicationException;
+
 import com.client.transferencia.application.service.dto.TransferenciaRequestDTO;
 import com.client.transferencia.application.service.dto.TransferenciaResponseDTO;
+import com.client.transferencia.domain.bacen.service.BacenService;
 import com.client.transferencia.domain.cliente.service.ClienteService;
 import com.client.transferencia.domain.conta.service.ContaService;
-import com.client.transferencia.domain.transferencia.service.TransferenciaService;
+import com.client.transferencia.domain.exception.ClienteNotFoundException;
+import com.client.transferencia.domain.exception.ContaNotFoundException;
 import com.client.transferencia.infrastructure.shared.dto.ContaOrigemDestinoDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
@@ -27,7 +29,7 @@ public class TransferenciaApplicationServiceTest {
     private final TransferenciaApplicationService transferenciaApplicationService = new TransferenciaApplicationServiceImpl();
 
     @Mock
-    private TransferenciaService transferenciaService;
+    private BacenService bacenService;
 
     @Mock
     private ClienteService clienteService;
@@ -50,7 +52,7 @@ public class TransferenciaApplicationServiceTest {
         when(clienteService.buscarCliente(any())).thenReturn(Mono.just(requestDTO));
         when(contaService.buscarConta(any())).thenReturn(Mono.just(requestDTO));
         when(contaService.atualizarSaldo(any())).thenReturn(Mono.just(requestDTO));
-        when(transferenciaService.efetuarTransferencia(any())).thenReturn(Mono.just(responseDTO));
+        when(bacenService.notificarBacen(any())).thenReturn(Mono.just(responseDTO));
 
         Mono<TransferenciaResponseDTO> responseMono = transferenciaApplicationService.realizarTransferencia(requestDTO);
 
@@ -61,23 +63,23 @@ public class TransferenciaApplicationServiceTest {
         verify(clienteService).buscarCliente(any());
         verify(contaService).buscarConta(any());
         verify(contaService).atualizarSaldo(any());
-        verify(transferenciaService).efetuarTransferencia(any());
+        verify(bacenService).notificarBacen(any());
     }
 
     @Test
     public void testeEfetuarTransferenciaFalhaAoBuscarCliente() {
         TransferenciaRequestDTO requestDTO = mockRequest();
 
-        when(clienteService.buscarCliente(any())).thenReturn(Mono.error(new ApplicationException("Erro ao buscar cliente", "")));
+        when(clienteService.buscarCliente(any())).thenReturn(Mono.error(new ClienteNotFoundException("Erro ao buscar cliente")));
 
         Mono<TransferenciaResponseDTO> responseMono = transferenciaApplicationService.realizarTransferencia(requestDTO);
 
         StepVerifier.create(responseMono)
-                .expectError(ApplicationException.class)
+                .expectError(ClienteNotFoundException.class)
                 .verify();
 
         verify(clienteService).buscarCliente(any());
-        verifyNoInteractions(contaService, transferenciaService);
+        verifyNoInteractions(contaService, bacenService);
     }
 
     @Test
@@ -85,37 +87,20 @@ public class TransferenciaApplicationServiceTest {
         TransferenciaRequestDTO requestDTO = mockRequest();
 
         when(clienteService.buscarCliente(any())).thenReturn(Mono.just(requestDTO));
-        when(contaService.buscarConta(any())).thenReturn(Mono.error(new ApplicationException("Erro ao buscar conta", "")));
+        when(contaService.buscarConta(any())).thenReturn(Mono.error(new ContaNotFoundException("Erro ao buscar conta")));
 
         Mono<TransferenciaResponseDTO> responseMono = transferenciaApplicationService.realizarTransferencia(requestDTO);
 
         StepVerifier.create(responseMono)
-                .expectError(ApplicationException.class)
+                .expectError(ContaNotFoundException.class)
                 .verify();
 
         verify(clienteService).buscarCliente(any());
         verify(contaService).buscarConta(any());
-        verifyNoMoreInteractions(transferenciaService);
+        verifyNoMoreInteractions(bacenService);
     }
 
-    //@Test
-    public void testeEfetuarTransferenciaFalhaAoEfetuarTransferencia() {
-        TransferenciaRequestDTO requestDTO = mockRequest();
 
-        when(clienteService.buscarCliente(any())).thenReturn(Mono.just(requestDTO));
-        when(contaService.buscarConta(any())).thenReturn(Mono.just(requestDTO));
-        when(transferenciaService.efetuarTransferencia(any(TransferenciaRequestDTO.class))).thenReturn(Mono.error(new ApplicationException("Erro ao efetuar transferência", "")));
-
-        Mono<TransferenciaResponseDTO> responseMono = transferenciaApplicationService.realizarTransferencia(requestDTO);
-
-        StepVerifier.create(responseMono)
-                .expectError(ApplicationException.class)
-                .verify();
-
-        verify(clienteService).buscarCliente(any());
-        verify(contaService).buscarConta(any());
-        verify(transferenciaService).efetuarTransferencia(any(TransferenciaRequestDTO.class));
-    }
 
 
     private Mono<TransferenciaResponseDTO> mockReturn() {

@@ -1,7 +1,7 @@
 package com.client.transferencia.domain.conta.service;
 
 import com.client.transferencia.application.service.dto.TransferenciaRequestDTO;
-import com.client.transferencia.domain.exception.DomainException;
+import com.client.transferencia.domain.exception.*;
 import com.client.transferencia.infrastructure.data.integration.rest.conta.ContaIntegration;
 import com.client.transferencia.infrastructure.shared.dto.ContaDTO;
 import com.client.transferencia.infrastructure.shared.dto.ContaOrigemDestinoDTO;
@@ -73,7 +73,7 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(ContaNotFoundException.class)
                 .verify();
     }
 
@@ -86,7 +86,7 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(ContaInactiveException.class)
                 .verify();
     }
 
@@ -99,7 +99,7 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(InsufficientBalanceException.class)
                 .verify();
     }
 
@@ -114,7 +114,7 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(ExceededDailyLimitException.class)
                 .verify();
     }
 
