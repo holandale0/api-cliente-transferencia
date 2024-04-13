@@ -18,7 +18,5 @@ server:
 integracao:
   url: http://localhost:9090
 
-transferencia:
-  url: http://localhost:9090
 
 
