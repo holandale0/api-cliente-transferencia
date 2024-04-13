@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface TransferenciaApplicationService {
 
     Mono<TransferenciaResponseDTO> realizarTransferencia(TransferenciaRequestDTO transferenciaRequestDTO);
+
 }

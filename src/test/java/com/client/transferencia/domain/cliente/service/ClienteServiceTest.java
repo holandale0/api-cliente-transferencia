@@ -1,6 +1,7 @@
 package com.client.transferencia.domain.cliente.service;
 
 import com.client.transferencia.application.service.dto.TransferenciaRequestDTO;
+import com.client.transferencia.domain.exception.ClienteNotFoundException;
 import com.client.transferencia.infrastructure.data.exception.InfrastructureException;
 import com.client.transferencia.infrastructure.data.integration.rest.cliente.ClienteIntegration;
 import com.client.transferencia.infrastructure.shared.dto.ClienteDTO;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class ClienteServiceTest {
 
     @InjectMocks
-    private ClienteService clienteService =  new ClienteServiceImpl();
+    private ClienteService clienteService = new ClienteServiceImpl();
 
     @Mock
     private ClienteIntegration clienteIntegration;
@@ -53,23 +54,25 @@ public class ClienteServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = clienteService.buscarCliente(new TransferenciaRequestDTO("clienteId"));
 
         StepVerifier.create(resultMono)
-                .expectError(InfrastructureException.class)
+                .expectError(ClienteNotFoundException.class)
                 .verify();
     }
 
-    private Mono<TransferenciaRequestDTO> mockObject(){
-        return Mono.create(monoSink -> {TransferenciaRequestDTO.builder()
-                .idCliente("2ceb26e9-7b5c-417e-bf75-ffaa66e3a76f")
-                .valor(BigDecimal.TEN)
-                .contaDTO(ContaOrigemDestinoDTO.builder()
-                        .idDestino("41313d7b-bd75-4c75-9dea-1f4be434007f")
-                        .idOrigem("d0d32142-74b7-4aca-9c68-838aeacef96b")
-                        .build())
-                .build();});
+    private Mono<TransferenciaRequestDTO> mockObject() {
+        return Mono.create(monoSink -> {
+            TransferenciaRequestDTO.builder()
+                    .idCliente("2ceb26e9-7b5c-417e-bf75-ffaa66e3a76f")
+                    .valor(BigDecimal.TEN)
+                    .contaDTO(ContaOrigemDestinoDTO.builder()
+                            .idDestino("41313d7b-bd75-4c75-9dea-1f4be434007f")
+                            .idOrigem("d0d32142-74b7-4aca-9c68-838aeacef96b")
+                            .build())
+                    .build();
+        });
     }
 
 
-    private ClienteDTO clienteMock(){
+    private ClienteDTO clienteMock() {
         return ClienteDTO.builder()
                 .id("bcdd1048-a501-4608-bc82-66d7b4db3600")
                 .nome("João Silva")

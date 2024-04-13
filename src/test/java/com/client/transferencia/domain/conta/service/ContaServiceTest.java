@@ -1,7 +1,7 @@
 package com.client.transferencia.domain.conta.service;
 
 import com.client.transferencia.application.service.dto.TransferenciaRequestDTO;
-import com.client.transferencia.domain.exception.DomainException;
+import com.client.transferencia.domain.exception.*;
 import com.client.transferencia.infrastructure.data.integration.rest.conta.ContaIntegration;
 import com.client.transferencia.infrastructure.shared.dto.ContaDTO;
 import com.client.transferencia.infrastructure.shared.dto.ContaOrigemDestinoDTO;
@@ -21,7 +21,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 
 class ContaServiceTest {
@@ -74,7 +73,7 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(ContaNotFoundException.class)
                 .verify();
     }
 
@@ -87,7 +86,7 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(ContaInactiveException.class)
                 .verify();
     }
 
@@ -100,7 +99,7 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(InsufficientBalanceException.class)
                 .verify();
     }
 
@@ -115,13 +114,11 @@ class ContaServiceTest {
         Mono<TransferenciaRequestDTO> resultMono = contaService.buscarConta(mockRequest());
 
         StepVerifier.create(resultMono)
-                .expectError(DomainException.class)
+                .expectError(ExceededDailyLimitException.class)
                 .verify();
     }
 
-
-
-    private TransferenciaRequestDTO mockRequest(){
+    private TransferenciaRequestDTO mockRequest() {
         return TransferenciaRequestDTO.builder()
                 .idCliente("2ceb26e9-7b5c-417e-bf75-ffaa66e3a76f")
                 .valor(BigDecimal.TEN)

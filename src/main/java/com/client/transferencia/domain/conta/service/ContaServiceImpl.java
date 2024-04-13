@@ -2,7 +2,7 @@ package com.client.transferencia.domain.conta.service;
 
 
 import com.client.transferencia.application.service.dto.TransferenciaRequestDTO;
-import com.client.transferencia.domain.exception.DomainException;
+import com.client.transferencia.domain.exception.*;
 import com.client.transferencia.infrastructure.data.exception.InfrastructureException;
 import com.client.transferencia.infrastructure.data.integration.rest.conta.ContaIntegration;
 import com.client.transferencia.infrastructure.shared.dto.ContaDTO;
@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 
 
 @Service
-public class ContaServiceImpl implements ContaService{
+public class ContaServiceImpl implements ContaService {
 
     @Autowired
     private ContaIntegration contaIntegration;
@@ -25,23 +25,22 @@ public class ContaServiceImpl implements ContaService{
 
     public Mono<TransferenciaRequestDTO> buscarConta(TransferenciaRequestDTO request) {
         return Mono.create(monoSink -> {
-            try{
+            try {
                 ContaDTO conta = contaIntegration.obterConta(request.getContaDTO().getIdOrigem());
-                System.out.println("Conta: "+conta);
                 if (conta == null) {
-                    monoSink.error(new DomainException("Conta","Conta não encontrada para o ID: " + request.getContaDTO().getIdOrigem()));
+                    monoSink.error(new ContaNotFoundException("Conta não encontrada para o ID: " + request.getContaDTO().getIdOrigem()));
                 }
                 if (!conta.getAtivo()) {
-                    monoSink.error(new DomainException("Conta","A conta está inativa: " + request.getContaDTO().getIdOrigem()));
+                    monoSink.error(new ContaInactiveException("A conta está inativa: " + request.getContaDTO().getIdOrigem()));
                 }
-                if(conta.getSaldo().compareTo(BigDecimal.ZERO) <= 0){
-                    monoSink.error(new DomainException("Conta","A conta não possui saldo suficiente: " + request.getContaDTO().getIdOrigem()));
+                if (conta.getSaldo().compareTo(BigDecimal.ZERO) <= 0) {
+                    monoSink.error(new InsufficientBalanceException(String.format("A conta não possui saldo suficiente. Saldo disponível: %s, Valor solicitado: %s", conta.getSaldo(), request.getValor())));
                 }
-                if(conta.getLimiteDiario().compareTo(BigDecimal.ZERO) == 0 || request.getValor().compareTo(conta.getLimiteDiario()) > 0){
-                    monoSink.error(new DomainException("Conta","O valor solicitado na transferência está acima do limite diário: " + request.getContaDTO().getIdOrigem()));
+                if (conta.getLimiteDiario().compareTo(BigDecimal.ZERO) == 0 || request.getValor().compareTo(conta.getLimiteDiario()) > 0) {
+                    monoSink.error(new ExceededDailyLimitException(String.format("O valor solicitado na transferência está acima do limite diário. Limite diário: %s, Valor solicitado: %s", conta.getSaldo(), request.getValor())));
                 }
                 monoSink.success(request);
-            }catch (Exception e){
+            } catch (Exception e) {
                 monoSink.error(new InfrastructureException("Erro no serviço externo de conta."));
             }
 
@@ -49,12 +48,12 @@ public class ContaServiceImpl implements ContaService{
     }
 
 
-    public Mono<TransferenciaRequestDTO> atualizarSaldo(TransferenciaRequestDTO request){
+    public Mono<TransferenciaRequestDTO> atualizarSaldo(TransferenciaRequestDTO request) {
         return Mono.create(monoSink -> {
-            try{
-            contaIntegration.atualizarSaldo(request);
-            monoSink.success(request);
-            }catch (Exception e){
+            try {
+                contaIntegration.atualizarSaldo(request);
+                monoSink.success(request);
+            } catch (Exception e) {
                 monoSink.error(new InfrastructureException("Erro no serviço externo de conta."));
             }
         });

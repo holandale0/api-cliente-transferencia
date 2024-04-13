@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface BacenService {
 
-    Mono<TransferenciaResponseDTO> notificarBacen(TransferenciaRequestDTO requestDTO, TransferenciaResponseDTO responseDTO);
+    Mono<TransferenciaResponseDTO> notificarBacen(TransferenciaRequestDTO requestDTO);
 }

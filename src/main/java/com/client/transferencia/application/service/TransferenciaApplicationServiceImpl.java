@@ -1,12 +1,12 @@
 package com.client.transferencia.application.service;
 
 
-import com.client.transferencia.application.exception.ApplicationException;
+
 import com.client.transferencia.application.service.dto.TransferenciaRequestDTO;
 import com.client.transferencia.application.service.dto.TransferenciaResponseDTO;
+import com.client.transferencia.domain.bacen.service.BacenService;
 import com.client.transferencia.domain.cliente.service.ClienteService;
 import com.client.transferencia.domain.conta.service.ContaService;
-import com.client.transferencia.domain.transferencia.service.TransferenciaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +16,8 @@ import reactor.core.publisher.Mono;
 @Service
 public class TransferenciaApplicationServiceImpl implements TransferenciaApplicationService {
 
-    //@Autowired
-    // private BacenService bacenService;
-
     @Autowired
-    private TransferenciaService transferenciaService;
+    private BacenService bacenService;
 
     @Autowired
     private ClienteService clienteService;
@@ -34,13 +31,9 @@ public class TransferenciaApplicationServiceImpl implements TransferenciaApplica
         return clienteService.buscarCliente(transferenciaRequestDTO)
                 .flatMap(requestDTO -> contaService.buscarConta(requestDTO))
                 .flatMap(requestDTO -> contaService.atualizarSaldo(requestDTO))
-                .flatMap(requestDTO -> transferenciaService.efetuarTransferencia(requestDTO))
+                .flatMap(requestDTO -> bacenService.notificarBacen(requestDTO))
                 .map(responseDTO -> TransferenciaResponseDTO.builder()
                         .idTransferencia(responseDTO.getIdTransferencia())
-                        .build())
-                .onErrorMap(throwable -> {
-                    LOGGER.error("Erro ao processar transferência: {}", throwable.getMessage());
-                    return new ApplicationException("TRANSFERENCIA_ERROR", "Erro ao processar transferência");
-                });
+                        .build());
     }
 }

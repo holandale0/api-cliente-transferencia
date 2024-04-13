@@ -7,7 +7,6 @@ public class ApplicationException extends RuntimeException {
     public ApplicationException(String errorCode, String message) {
         this.errorCode = errorCode;
         this.message = message;
-
     }
 
 }
